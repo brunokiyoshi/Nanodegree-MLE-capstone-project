@@ -9,7 +9,7 @@ import torch
 import torch.optim as optim
 import torch.utils.data
 
-from model import LSTMClassifier
+from model import LSTM
 
 def model_fn(model_dir):
     """Load the PyTorch model from the `model_dir` directory."""
@@ -25,17 +25,12 @@ def model_fn(model_dir):
 
     # Determine the device and construct the model.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = LSTMClassifier(model_info['embedding_dim'], model_info['hidden_dim'], model_info['vocab_size'])
+    model = LSTM(model_info['input_dim'], model_info['hidden_dim'], model_info['num_layers'], model_info['output_dim'])
 
     # Load the stored model parameters.
     model_path = os.path.join(model_dir, 'model.pth')
     with open(model_path, 'rb') as f:
         model.load_state_dict(torch.load(f))
-
-    # Load the saved word_dict.
-    word_dict_path = os.path.join(model_dir, 'word_dict.pkl')
-    with open(word_dict_path, 'rb') as f:
-        model.word_dict = pickle.load(f)
 
     model.to(device).eval()
 
@@ -46,9 +41,14 @@ def _get_train_data_loader(batch_size, training_dir):
     print("Get train data loader.")
 
     train_data = pd.read_csv(os.path.join(training_dir, "train.csv"), header=None, names=None)
-
-    train_y = torch.from_numpy(train_data[[0]].values).float().squeeze()
-    train_X = torch.from_numpy(train_data.drop([0], axis=1).values).long()
+    
+    train_y = train_data[[0]].values
+    train_y = torch.from_numpy(train_y).float()
+    
+    train_X = train_data.drop([0], axis=1).values
+    train_X = torch.from_numpy(train_X).float().unsqueeze(1)
+    print(train_X.size())
+    print(train_y.size())
 
     train_ds = torch.utils.data.TensorDataset(train_X, train_y)
 
@@ -77,7 +77,6 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
             
             batch_X = batch_X.to(device)
             batch_y = batch_y.to(device)
-            
             # TODO: Complete this train method to train the model provided.
             optimizer.zero_grad()
             prediction = model(batch_X)
@@ -86,7 +85,7 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
             loss.backward()
             optimizer.step()
             total_loss += loss.data.item()
-        print("Epoch: {}, BCELoss: {}".format(epoch, total_loss / len(train_loader)))
+        print("Epoch: {}, MSELoss: {}".format(epoch, total_loss / len(train_loader)))
     return model
 
 
@@ -105,12 +104,14 @@ if __name__ == '__main__':
                         help='random seed (default: 1)')
 
     # Model Parameters
-    parser.add_argument('--embedding_dim', type=int, default=32, metavar='N',
-                        help='size of the word embeddings (default: 32)')
+    parser.add_argument('--input_dim', type=int, default=32, metavar='N',
+                        help='size of the input (default: 32)')
     parser.add_argument('--hidden_dim', type=int, default=100, metavar='N',
                         help='size of the hidden dimension (default: 100)')
-    parser.add_argument('--vocab_size', type=int, default=5000, metavar='N',
-                        help='size of the vocabulary (default: 5000)')
+    parser.add_argument('--num_layers', type=int, default=1, metavar='N',
+                        help='number of layers (default: 1)')
+    parser.add_argument('--output_dim', type=int, default=1, metavar='N',
+                        help='number of outputs (default: 1)')
 
     # SageMaker Parameters
     parser.add_argument('--hosts', type=list, default=json.loads(os.environ['SM_HOSTS']))
@@ -130,18 +131,15 @@ if __name__ == '__main__':
     train_loader = _get_train_data_loader(args.batch_size, args.data_dir)
 
     # Build the model.
-    model = LSTMClassifier(args.embedding_dim, args.hidden_dim, args.vocab_size).to(device)
+    model = LSTM(args.input_dim, args.hidden_dim,args.num_layers, args.output_dim).to(device)
 
-    with open(os.path.join(args.data_dir, "word_dict.pkl"), "rb") as f:
-        model.word_dict = pickle.load(f)
-
-    print("Model loaded with embedding_dim {}, hidden_dim {}, vocab_size {}.".format(
-        args.embedding_dim, args.hidden_dim, args.vocab_size
+    print("Model loaded with input_dim {}, hidden_dim {}, num_layers{},output_dim {}.".format(
+        args.input_dim, args.hidden_dim, args.num_layers,args.output_dim
     ))
 
     # Train the model.
-    optimizer = optim.Adam(model.parameters())
-    loss_fn = torch.nn.BCELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    loss_fn = torch.nn.MSELoss(size_average=True)
 
     train(model, train_loader, args.epochs, optimizer, loss_fn, device)
 
@@ -149,16 +147,14 @@ if __name__ == '__main__':
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')
     with open(model_info_path, 'wb') as f:
         model_info = {
-            'embedding_dim': args.embedding_dim,
+            'input_dim': args.input_dim,
             'hidden_dim': args.hidden_dim,
-            'vocab_size': args.vocab_size,
+            'num_layers': args.num_layers,
+            'output_dim': args.output_dim,
         }
         torch.save(model_info, f)
 
     # Save the word_dict
-    word_dict_path = os.path.join(args.model_dir, 'word_dict.pkl')
-    with open(word_dict_path, 'wb') as f:
-        pickle.dump(model.word_dict, f)
 
     # Save the model parameters
     model_path = os.path.join(args.model_dir, 'model.pth')
