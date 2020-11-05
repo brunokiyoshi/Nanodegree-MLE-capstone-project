@@ -1,4 +1,4 @@
-Date,Open,Max,Min,Close,Volume [BRL],Volume [shares],IFR (RSI) [9],True Range [1],Moving Average A [21],Moving Average E [9],IsLocalPeak,IsLocalTrough,derivative_peaks,derivative_troughs,bear_harami,bull_harami,bear_engulfing,bull_engulfing,hammer,shooting_star
+Date,Open,High,Low,Close,Volume [BRL],Volume [shares],IFR (RSI) [9],True Range [1],Moving Average A [21],Moving Average E [9],IsLocalPeak,IsLocalTrough,derivative_peaks,derivative_troughs,bear_harami,bull_harami,bear_engulfing,bull_engulfing,hammer,shooting_star
 2008-12-02,35.11,35.81,34.91,35.39,26819970.0,759900,,,35.39,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 2008-12-03,34.73,35.4,33.9,35.31,11482717.0,330100,,1.5,35.35,35.31,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 2008-12-04,35.8,36.0,35.15,35.7,4554168.0,128400,,0.85,35.46666666666667,35.57,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

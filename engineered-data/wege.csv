@@ -1,4 +1,4 @@
-Date,Open,Max,Min,Close,Volume [BRL],Volume [shares],IFR (RSI) [9],True Range [1],Moving Average A [21],Moving Average E [9],IsLocalPeak,IsLocalTrough,derivative_peaks,derivative_troughs,bear_harami,bull_harami,bear_engulfing,bull_engulfing,hammer,shooting_star
+Date,Open,High,Low,Close,Volume [BRL],Volume [shares],IFR (RSI) [9],True Range [1],Moving Average A [21],Moving Average E [9],IsLocalPeak,IsLocalTrough,derivative_peaks,derivative_troughs,bear_harami,bull_harami,bear_engulfing,bull_engulfing,hammer,shooting_star
 1994-07-04,0.03,0.03,0.03,0.03,267.0,3380,,,0.03,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 1994-07-05,0.03,0.03,0.03,0.03,1925.0,23660,0.0,,0.03,0.03,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 1994-07-06,0.03,0.04,0.03,0.04,6195.0,74360,0.0,,0.03333333333333333,0.03666666666666667,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
